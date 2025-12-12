@@ -1,0 +1,26 @@
+{
+  "name": "farmate",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "client:dev": "turbo run dev --filter=client",
+    "server:dev": "turbo run dev --filter=server",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "turbo": "^2.6.3"
+  },
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "npm@10.0.0"
+}
