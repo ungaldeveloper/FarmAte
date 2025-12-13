@@ -5,10 +5,198 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider         = "prisma-client-js"
+  providerFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum UserRole {
+  FARMER
+  CONSUMER
+  SERVICE_PROVIDER
+  SHOP_OWNER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  IN_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum ServiceStatus {
+  PENDING
+  ACCEPTED
+  COMPLETED
+  CANCELLED
+}
+
+enum AdvisoryType {
+  WEATHER
+  CROP
+  PEST
+  VALUE_ADDITION
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String   @unique
+  email     String   @unique
+  password  String
+  pin       Int      @default(0000)
+  role      UserRole @default(FARMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  farmerProfile   FarmerProfile?
+  consumerProfile ConsumerProfile?
+  serviceProvider ServiceProvider?
+  shopOwner       Shop?
+
+  deviceTokens   DeviceToken[]
+  orders         Order[]
+  listings       Listing[]
+  servicesBooked ServiceBooking[]
+}
+
+model FarmerProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  farms Farm[]
+}
+
+model ConsumerProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Farm {
+  id       String        @id @default(uuid())
+  farmerId String
+  farmer   FarmerProfile @relation(fields: [farmerId], references: [id])
+
+  name       String?
+  soilType   String?
+  cropType   String?
+  farmSize   Float?
+  latitude   Float?
+  longitude  Float?
+  irrigation String?
+
+  crops Crop[]
+
+  createdAt DateTime @default(now())
+}
+
+model Crop {
+  id     String @id @default(uuid())
+  farmId String
+  farm   Farm   @relation(fields: [farmId], references: [id])
+
+  type      String
+  stage     String?
+  plantedAt DateTime?
+
+  createdAt DateTime @default(now())
+}
+
+model Listing {
+  id       String @id @default(uuid())
+  farmerId String
+  farmer   User   @relation(fields: [farmerId], references: [id])
+
+  crop     String
+  quantity Float
+  price    Float
+  grade    String?
+  imageUrl String?
+  location String?
+
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Order {
+  id        String  @id @default(uuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  consumerId String
+  consumer   User   @relation(fields: [consumerId], references: [id])
+
+  quantity   Float
+  totalPrice Float
+  status     OrderStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+}
+
+model ServiceProvider {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  category String // drone, tractor, irrigation
+  price    Float?
+  location String?
+
+  bookings ServiceBooking[]
+}
+
+model ServiceBooking {
+  id        String          @id @default(uuid())
+  serviceId String
+  service   ServiceProvider @relation(fields: [serviceId], references: [id])
+
+  farmerId String
+  farmer   User   @relation(fields: [farmerId], references: [id])
+
+  date   DateTime
+  status ServiceStatus @default(PENDING)
+  notes  String?
+
+  createdAt DateTime @default(now())
+}
+
+model Shop {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  name     String
+  location String?
+
+  products Product[]
+}
+
+model Product {
+  id     String @id @default(uuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id])
+
+  name     String
+  category String
+  price    Float
+  stock    Int
+
+  createdAt DateTime @default(now())
+}
+
+model DeviceToken {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  token     String   @unique
+  platform  String? // web, android, ios
+  createdAt DateTime @default(now())
 }

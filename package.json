@@ -16,6 +16,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@prisma/client": "^7.1.0",
+    "prisma": "^7.1.0",
+    "shadcn": "^3.5.2",
     "turbo": "^2.6.3"
   },
   "private": true,
